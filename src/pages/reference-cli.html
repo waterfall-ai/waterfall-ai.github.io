@@ -1,0 +1,22 @@
+<article class="page">
+  <header class="page__header">
+    <p class="eyebrow">Reference</p>
+    <h1>CLI reference (overview)</h1>
+    <p class="lead">Quick orientation for operators and contributors. Authoritative behavior lives in the shipped CLI help and <code>waterfall-cli</code> sources.</p>
+  </header>
+
+  <section class="section">
+    <h2>Global options</h2>
+    <ul class="feature-list">
+      <li><code>--spec-root</code>, <code>WATERFALL_SPEC_ROOT</code>, <code>.waterfall</code> — spec resolution order is documented in the CLI README.</li>
+      <li><code>--backend</code> — <code>cline-ollama</code> (default), <code>cursor</code>, <code>claude-code</code>.</li>
+      <li><code>--dry-run</code> / <code>--execute-agent</code> — plan vs invoke.</li>
+      <li><code>--prompt-delivery embed|reference</code> — inline workflow text vs absolute paths to shipped prompts.</li>
+    </ul>
+  </section>
+
+  <section class="section section--muted">
+    <h2>Branch rules (typical)</h2>
+    <p><code>cr start</code> and <code>story close</code> on <code>develop</code>; lifecycle prompts, horizontals, <code>sys start</code>, and <code>cr finish</code> on <code>feature/CR-…</code> branches—see your spec’s <code>CURSOR.md</code> for normative policy.</p>
+  </section>
+</article>
