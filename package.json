@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && node dist/build.js",
+    "preview": "npm run build && npx --yes serve dist-site -p 4173",
     "clean": "rm -rf dist-site",
     "docker:build": "npm run build && docker build -t waterfall-website:local .",
     "docker:up": "npm run build && docker compose up --build",

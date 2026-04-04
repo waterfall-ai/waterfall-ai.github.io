@@ -27,6 +27,14 @@ npm run build
 
 Output: `dist-site/` (HTML + `assets/style.css`). Compiled build script: `dist/build.js`.
 
+## Preview (no Docker)
+
+```bash
+npm run preview
+```
+
+Serves `dist-site` at [http://localhost:4173](http://localhost:4173) (one-off `serve` via `npx`).
+
 ## Docker (nginx)
 
 Requires a fresh build so `dist-site` exists:
