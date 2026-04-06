@@ -1,0 +1,114 @@
+<p class="lead cli-ref__lead">
+  The sections below are generated at <strong>site build time</strong> by running
+  <code>waterfall help -o json</code> in the <code>waterfall-cli</code> package and rendering
+  that output as HTML. The same payload is published for tools and scripts:
+  <a href="/assets/cli-help.json"><code>/assets/cli-help.json</code></a>.
+</p>
+
+<p class="cli-ref__callout" role="status">
+  <strong>Prerelease.</strong> Waterfall is currently in prerelease phase. The CLI and this reference
+  may change between releases; rebuild the site after upgrading <code>waterfall-cli</code> so tables match your version.
+</p>
+
+<nav class="cli-ref__toc" aria-label="On this page">
+  <p class="cli-ref__toc-label">On this page</p>
+  <ul class="cli-ref__toc-list">
+    <li><a href="#general-examples">General examples</a></li>
+    <li><a href="#operator-hint">Operator hint (&lt;hint&gt;)</a></li>
+    <li><a href="#commands">Commands</a></li>
+    <li><a href="#global-options">Global options</a></li>
+    <li><a href="#environment-variables">Environment variables</a></li>
+    <li><a href="#config">Configuration files</a></li>
+    <li><a href="#spec-resolution">Spec root resolution</a></li>
+  </ul>
+</nav>
+
+<h2 class="cli-ref__intro-h2">What’s in the JSON</h2>
+<div class="cli-ref__intro-block">
+  <p>
+    Top-level fields include
+    <code>commands</code>, <code>globalOptions</code>, <code>environment</code>
+    (rendered below as <a href="#environment-variables">Environment variables</a>),
+    <code>config</code> (precedence, file locations, and <code>config.notes</code> such as lifecycle status)
+    and <code>dotWaterfall</code> (both rendered under
+    <a href="#config">Configuration files</a>),
+    <code>specResolution</code>, plus <code>name</code> and <code>title</code>.
+  </p>
+  <p>
+    Each command row shows the full <code>waterfall …</code> invocation (from <code>cliForm</code>)
+    with a <strong>Copy</strong> control; the dotted internal <code>id</code> sits on the right.
+    Expand a row for the summary, a concrete <strong>Example</strong>, the required spec-repo
+    <strong>Branch</strong> (from <code>branchRequirement</code>), and optional
+    <code>argvPrefix</code>, <code>positionals</code>, <code>commandOptions</code>,
+    <code>promptFile</code>, and <code>orchestrationSteps</code> in the JSON.
+  </p>
+</div>
+
+<h2 class="cli-ref__intro-h2" id="general-examples">General examples</h2>
+<p class="cli-ref__intro-block">
+  These are typical invocations; branch rules still apply (see each command’s <strong>Branch</strong> line below).
+  Global flags such as <code>--spec-root</code>, <code>--dry-run</code>, and <code>--execute-agent</code> can go
+  before the subcommand or after it (e.g. <code>waterfall cr start --execute-agent &quot;…&quot;</code>).
+  The same switches are mirrored by <code>WATERFALL_DRY_RUN</code> and <code>WATERFALL_EXECUTE_AGENT</code> for containers and CI
+  (see <a href="#global-options">Global options</a> and <a href="#environment-variables">Environment variables</a>).
+</p>
+<ol class="cli-ref__examples-list">
+  <li>
+    <p><strong>Usage and machine spec.</strong></p>
+    <pre class="cli-ref__snippet"><code>waterfall help
+waterfall help -o json</code></pre>
+  </li>
+  <li>
+    <p><strong>Open a change request</strong> (spec repo on <code>develop</code>).</p>
+    <pre class="cli-ref__snippet"><code>waterfall cr start "OAuth login for partners"</code></pre>
+  </li>
+  <li>
+    <p><strong>Lifecycle agent step</strong> on <code>feature/CR-…</code> with an <a href="#operator-hint">inline hint</a> (plan only).</p>
+    <pre class="cli-ref__snippet"><code>waterfall --dry-run cr to rq focus on session expiry edge cases</code></pre>
+  </li>
+  <li>
+    <p><strong>Run the agent</strong> for a lifecycle step (real backend; set <code>execute_agent=true</code> in <code>.waterfall</code> or pass <code>--execute-agent</code>).</p>
+    <pre class="cli-ref__snippet"><code>waterfall cr to rq --execute-agent align RQ themes with checkout scope</code></pre>
+  </li>
+  <li>
+    <p><strong>Close a story</strong> (spec repo on <code>develop</code>).</p>
+    <pre class="cli-ref__snippet"><code>waterfall story close STORY-042</code></pre>
+  </li>
+  <li>
+    <p><strong>Finish the CR</strong> (checks + merge into <code>develop</code>; run from the CR feature branch).</p>
+    <pre class="cli-ref__snippet"><code>waterfall cr finish</code></pre>
+  </li>
+</ol>
+
+<h3 class="cli-ref__subh" id="operator-hint">The <code>&lt;hint&gt;</code> positional</h3>
+<p class="cli-ref__intro-block">
+  Commands that take <code>&lt;hint&gt;</code> (or similar free text after fixed arguments) resolve
+  <strong>operator hints</strong> in one of three ways—the same rules as in
+  <code>cli-help.json</code> → <code>operatorHint</code>. Only one mode applies per invocation.
+</p>
+<ul class="feature-list cli-ref__hint-modes">
+  <li>
+    <strong>Inline (default).</strong> All remaining argv tokens after the fixed command words are joined with
+    single spaces (shell quoting sets word boundaries).
+    <pre class="cli-ref__snippet"><code>waterfall rq to uc tighten validation around refunds</code></pre>
+  </li>
+  <li>
+    <strong>Stdin.</strong> Exactly one token <code>-</code> reads the entire hint from standard input as UTF-8
+    (good for multi-line text or scripts).
+    <pre class="cli-ref__snippet"><code>printf '%s\n' 'Line one
+Line two' | waterfall uc to story -</code></pre>
+  </li>
+  <li>
+    <strong>File.</strong> Exactly one token starting with <code>@</code> reads the file path after
+    <code>@</code>; relative paths resolve against the current working directory.
+    <pre class="cli-ref__snippet"><code>waterfall test to story @notes/repro-hint.md</code></pre>
+  </li>
+</ul>
+
+<p class="cli-ref__branch-note">
+  <strong>Branch policy:</strong> each command documents the required git branch in the spec repo
+  (expanded row and <code>branchRequirement</code> in JSON). In short: <code>cr start</code> and
+  <code>story close</code> on <code>develop</code>; lifecycle prompts, horizontals,
+  <code>sys start</code>, and <code>cr finish</code> on <code>feature/CR-…</code> — see your spec’s
+  <code>CURSOR.md</code>.
+</p>

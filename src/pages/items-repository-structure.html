@@ -1,0 +1,107 @@
+<article class="page">
+  <header class="page__header">
+    <p class="eyebrow">Concept</p>
+    <h1>Repository structure</h1>
+    <p class="lead">
+      A <strong>waterfall-spec</strong> checkout is a Git repo of markdown artifacts—not application source. Layout follows
+      <code>CURSOR.md</code> in your tree; this page sketches the usual top-level shape after
+      <code>waterfall spec init</code>.
+    </p>
+  </header>
+
+  <section class="section">
+    <h2>Sketch of the tree</h2>
+    <p>Example paths are illustrative; slugs and numeric suffixes follow <code>CURSOR.md</code> and existing folder names (next id = one past the highest index already present for that item type).</p>
+    <pre class="ascii-tree">waterfall-spec/                    # your spec repo root
+├── pom.json                       # project title (+ future metadata); from spec init
+├── changerequests/
+│   └── CR-001-example-feature/
+│       └── CR-001.md
+├── requirements/
+│   └── RQ-101-goals/
+│       ├── RQ-101.md
+│       └── UC-201-main-flow/
+│           └── UC-201.md
+├── technical/
+│   ├── SYS-301-core-api/
+│   │   ├── SYS-301.md
+│   │   └── _STORY-401-first-slice/
+│   │       └── STORY-401.md
+│   └── horizontals/
+│       └── HOR-010-data-model/
+│           └── HOR-010.md
+├── tests/
+│   └── TST-501-happy-path/
+│       └── TST-501.md
+├── prompts/                       # optional: workflow index + pointers (add manually)
+├── doc/                           # optional: e.g. spec-structure.md (non-normative)
+├── CURSOR.md                      # normative layout &amp; rules for this repo
+└── …</pre>
+  </section>
+
+  <section class="section section--muted">
+    <h2>Top-level sections</h2>
+    <div class="cli-ref__table-wrap">
+      <table class="cli-ref__table">
+        <thead>
+          <tr>
+            <th scope="col">Path / file</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Primary item types</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>pom.json</code></td>
+            <td>Project metadata (required <code>title</code> from <code>spec init</code>; used e.g. for PDF export).</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>changerequests/</code></td>
+            <td>Scoped product change: intent, impact, and traceability into requirements.</td>
+            <td><a href="/items/cr/">CR</a></td>
+          </tr>
+          <tr>
+            <td><code>requirements/</code></td>
+            <td>Requirement themes; each theme folder holds its <strong>RQ</strong> doc and nested <strong>UC</strong> folders.</td>
+            <td><a href="/items/rq/">RQ</a>, <a href="/items/uc/">UC</a></td>
+          </tr>
+          <tr>
+            <td><code>technical/</code></td>
+            <td>Technical subsystems; under each <strong>SYS</strong> live stories, bugs, and related technical docs.</td>
+            <td><a href="/items/sys/">SYS</a>, <a href="/items/story/">STORY</a>, <a href="/items/bug/">BUG</a></td>
+          </tr>
+          <tr>
+            <td><code>technical/horizontals/</code></td>
+            <td>Cross-cutting aggregates (data model, API model, stack) referenced by many stories.</td>
+            <td><a href="/items/hor/">HOR</a></td>
+          </tr>
+          <tr>
+            <td><code>tests/</code></td>
+            <td>Acceptance test specifications (e.g. Gherkin-oriented) tied to UCs and stories.</td>
+            <td><a href="/items/tst/">TST</a></td>
+          </tr>
+          <tr>
+            <td><code>prompts/</code></td>
+            <td>Optional spec-local workflow index and pointers into Waterfall CLI prompts (not created by <code>spec init</code>).</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>doc/</code></td>
+            <td>Optional human-readable notes (non-normative); e.g. directory cheat sheets.</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><code>CURSOR.md</code></td>
+            <td>Normative “law” for layout, naming, branching, and graph rules in this repo.</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cli-ref__cmd-lead">
+      Authoritative detail lives in your spec’s <code>CURSOR.md</code> and in
+      <a href="/reference/cli/">CLI reference</a> / <a href="/modules/cli/">CLI module</a> for commands that scaffold paths.
+    </p>
+  </section>
+</article>

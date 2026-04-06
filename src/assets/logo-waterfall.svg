@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+  <!-- Stepped flow (waterfall cadence) descending to a down-arrow -->
+  <path fill="#5b9fd4" d="M6 7h20v6H6V7z"/>
+  <path fill="#4a8ab8" d="M14 16h20v6H14v-6z"/>
+  <path fill="#5b9fd4" d="M22 25h20v6H22v-6z"/>
+  <path fill="#7eb8e8" d="M32 33l8.5 11H23.5L32 33z"/>
+</svg>

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{TITLE}}</title>
   <meta name="description" content="{{DESCRIPTION}}" />
-  <link rel="stylesheet" href="/assets/style.css" />
+  <link rel="icon" href="/assets/logo-waterfall.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/style.css?v={{STYLE_VERSION}}" />
 </head>
 <body>
   {{HEADER}}
@@ -13,5 +14,58 @@
     {{MAIN}}
   </main>
   {{FOOTER}}
+  <script type="module">
+    import mermaid from "/assets/mermaid-dist/mermaid.esm.min.mjs";
+
+    /** Dark theme CSS sets .edgePath .path stroke, which overrides Mermaid linkStyle. */
+    const CR1_EDGE = "#5b9fd4";
+    const CR2_EDGE = "#e8b86d";
+    const EDGE_WIDTH = "2.75px";
+
+    function paintWorkflowCrEdges(svgId) {
+      const svg = document.getElementById(svgId);
+      if (!svg || svg.tagName !== "SVG") return;
+      /** Mermaid wraps the SVG in an inner div; the opt-in class lives on the surrounding pre. */
+      const host = svg.closest("pre.mermaid--workflow-cr-edges");
+      if (!host) return;
+      const n1 = Number(host.dataset.cr1Edges || 0);
+      const n2 = Number(host.dataset.cr2Edges || 0);
+      if (!Number.isFinite(n1) || !Number.isFinite(n2)) return;
+      const groups = svg.querySelectorAll("g.edgePaths > g.edgePath");
+      groups.forEach((g, i) => {
+        let stroke = null;
+        if (i < n1) stroke = CR1_EDGE;
+        else if (i < n1 + n2) stroke = CR2_EDGE;
+        if (!stroke) return;
+        g.querySelectorAll("path.path").forEach((path) => {
+          path.style.setProperty("stroke", stroke, "important");
+          path.style.setProperty("stroke-width", EDGE_WIDTH, "important");
+        });
+      });
+    }
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "dark",
+      securityLevel: "loose",
+    });
+
+    function runMermaid() {
+      return mermaid.run({
+        querySelector: "pre.mermaid",
+        postRenderCallback: (id) => {
+          paintWorkflowCrEdges(id);
+        },
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        runMermaid().catch((err) => console.error("Mermaid:", err));
+      });
+    } else {
+      runMermaid().catch((err) => console.error("Mermaid:", err));
+    }
+  </script>
 </body>
 </html>

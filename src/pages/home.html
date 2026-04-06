@@ -11,13 +11,223 @@
   </p>
 </section>
 
-<section class="section">
-  <h2>Why teams pick Waterfall</h2>
+<section class="section section--integrations" aria-labelledby="integrations-heading">
+  <p class="eyebrow integrations__eyebrow">Works with your stack</p>
+  <h2 id="integrations-heading">One spec hub—wired into how you already ship</h2>
+  <p class="integrations__lead">
+    Stop copying requirements into five tools. Waterfall keeps <strong>change requests, requirements, and stories</strong>
+    authoritative in Git, then lets you <strong>plan in Jira</strong>, <strong>nudge teams in Slack</strong>, and
+    <strong>hand off to Cursor, Windsurf, or Cline</strong> so AI follows <em>your</em> repo rules—not a blank prompt.
+    When it’s time to brief execs or compliance, push the same truth to <strong>Confluence, PDF, or the web</strong>.
+  </p>
+  <ul class="integrations__bullets">
+    <li><strong>Fewer “which doc is right?” moments</strong> — one graph of intent, versioned like code.</li>
+    <li><strong>Agents that stay on brief</strong> — prompts and CLI wiring tuned to your waterfall-spec tree.</li>
+    <li><strong>Outputs people actually open</strong> — publish where stakeholders already work.</li>
+  </ul>
+  <div
+    class="integrations-hub"
+    role="img"
+    aria-label="Ecosystem: plan and communicate on the left, Waterfall in the center, documentation outputs on the right, coding agents below"
+  >
+    <div class="integrations-hub__main">
+      <div class="integrations-hub__column integrations-hub__column--left">
+        <h3 class="integrations__group-title">Plan &amp; align</h3>
+        <ul class="integrations-hub__tiles">
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/git.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">Git</span>
+          </li>
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/jira.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">Jira</span>
+          </li>
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/slack.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">Slack</span>
+          </li>
+        </ul>
+      </div>
+      <div class="integrations-hub__center">
+        <img
+          class="integrations-hub__waterfall-logo"
+          src="/assets/logo-waterfall.svg"
+          width="96"
+          height="96"
+          alt="Waterfall"
+        />
+        <span class="integrations-hub__center-caption">Waterfall</span>
+      </div>
+      <div class="integrations-hub__column integrations-hub__column--right">
+        <h3 class="integrations__group-title">Publish &amp; prove</h3>
+        <ul class="integrations-hub__tiles">
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/confluence.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">Confluence</span>
+          </li>
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/pdf.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">PDF</span>
+          </li>
+          <li class="int-tile">
+            <img class="int-tile__icon" src="/assets/integrations/website.svg" width="40" height="40" alt="" />
+            <span class="int-tile__label">Website</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="integrations-hub__agents">
+      <h3 class="integrations__group-title">Ship with the AI you already use</h3>
+      <ul class="integrations-hub__tiles integrations-hub__tiles--row">
+        <li class="int-tile">
+          <img class="int-tile__icon" src="/assets/integrations/cursor.svg" width="40" height="40" alt="" />
+          <span class="int-tile__label">Cursor</span>
+        </li>
+        <li class="int-tile">
+          <img class="int-tile__icon" src="/assets/integrations/windsurf.svg" width="40" height="40" alt="" />
+          <span class="int-tile__label">Windsurf</span>
+        </li>
+        <li class="int-tile">
+          <img class="int-tile__icon" src="/assets/integrations/cline.svg" width="40" height="40" alt="" />
+          <span class="int-tile__label">Cline</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <p class="integrations__footnote">
+    Names and logos belong to their owners—we’re showing where Waterfall is headed, not claiming every connector ships
+    today. <a href="/modules/extensions/">Extensions</a> is the roadmap: OIDC, deeper Jira, and more—plug in without
+    forking your spec model.
+  </p>
+</section>
+
+<section class="section" aria-labelledby="workflow-heading">
+  <p class="eyebrow">From ask to backlog—by design</p>
+  <h2 id="workflow-heading">Change requests become stories—with every handoff explicit</h2>
+  <p class="lead">
+    Waterfall models the whole path in Git: <strong>change requests → requirements → use cases → tests and
+    stories</strong>, with only the links your process allows. Everyone—PM, engineer, reviewer, agent—works off the
+    same versioned graph, so “what we agreed” doesn’t drift from “what shipped.” The diagram below shows two parallel
+    CRs converging through shared requirements, fanning into tests and backlog-ready stories, each tied to
+    implementation.
+  </p>
+  <p>
+    <strong>How to read it:</strong> each horizontal band is a layer (CR, RQ, UC, TST, STORY); solid arrows are the
+    main trace, dotted lines are follow-on impact, branching, or <strong>impl</strong> edges into code. Edge colors
+    separate <strong>CR-001</strong> (blue) from <strong>CR-002</strong> (amber). Rendered with
+    <a href="https://mermaid.js.org/" rel="noopener noreferrer">Mermaid</a>.
+  </p>
+  <div class="diagram-wrap">
+    <pre
+      class="mermaid mermaid--workflow-cr-edges"
+      data-cr1-edges="3"
+      data-cr2-edges="1"
+    >
+flowchart TB
+  subgraph layerCR["CR · change requests"]
+    direction LR
+    CR1["CR-001 · new checkout"]
+    CR2["CR-002 · refine returns"]
+  end
+
+  subgraph layerRQ["RQ · requirements"]
+    direction LR
+    RQ1["RQ-101 · goals"]
+    RQ2["RQ-102 · fraud rules"]
+    RQ3["RQ-103 · returns policy"]
+  end
+
+  subgraph layerUC["UC · use cases"]
+    direction LR
+    UC1["UC-201 · card payment"]
+    UC2["UC-202 · step-up auth"]
+    UC3["UC-203 · self-serve return"]
+  end
+
+  subgraph layerTST["TST · acceptance tests"]
+    direction LR
+    T1["TST-301 · pay flows"]
+    T2["TST-302 · return window"]
+  end
+
+  subgraph layerST["STORY · stories"]
+    direction LR
+    S401["STORY-401"]
+    S402["STORY-402"]
+    S403["STORY-403"]
+    S404["STORY-404"]
+    S405["STORY-405"]
+    S406["STORY-406"]
+    S407["STORY-407"]
+  end
+
+  subgraph layerImpl["Implementation"]
+    direction LR
+    G401((·))
+    G402((·))
+    G403((·))
+    G404((·))
+    G405((·))
+    G406((·))
+    G407((·))
+  end
+
+  CR1 --> RQ1
+  CR1 --> RQ2
+  CR1 --> RQ3
+  CR2 -.-> RQ3
+
+  RQ1 --> UC1
+  RQ2 --> UC1
+  RQ2 --> UC2
+  RQ3 -.-> UC3
+
+  UC1 --> S401
+  UC1 --> S402
+  UC2 --> S403
+  UC2 --> S404
+  UC3 -.-> S405
+  UC3 -.-> S406
+  UC3 -.-> S407
+
+  UC1 --> T1
+  UC2 --> T1
+  UC3 -.-> T2
+
+  T1 --> S402
+  T2 -.-> S407
+
+  S401 -.->|impl| G401
+  S402 -.->|impl| G402
+  S403 -.->|impl| G403
+  S404 -.->|impl| G404
+  S405 -.->|impl| G405
+  S406 -.->|impl| G406
+  S407 -.->|impl| G407
+    </pre>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="why-heading">
+  <p class="eyebrow">Why it wins in real teams</p>
+  <h2 id="why-heading">Why teams pick Waterfall</h2>
   <ul class="feature-list">
-    <li><strong>Living spec in Git</strong> — CRs, RQs, UCs, and stories stay versioned next to your product truth.</li>
-    <li><strong>Guided workflows</strong> — CLI prompts mirror your team’s edges: CR → RQ → UC → story → test.</li>
-    <li><strong>Horizontals</strong> — Cross-cutting models (API, data, stack) aggregate cleanly across stories.</li>
-    <li><strong>Pluggable agents</strong> — Wire Cline, Cursor, or Claude Code; dry-run first, execute when you mean it.</li>
+    <li>
+      <strong>Spec that ships with the product</strong> — change requests through stories live in Git next to your code:
+      branch, review, and roll back intent the same way you do features.
+    </li>
+    <li>
+      <strong>Workflows you don’t have to re‑negotiate every sprint</strong> — the CLI encodes allowed edges (CR → RQ →
+      UC → story, plus tests and implementation hooks) so the process stays consistent under pressure.
+    </li>
+    <li>
+      <strong>Cross‑cutting clarity, not wiki sprawl</strong> — horizontals (API, data, stack) attach across stories so
+      shared models stay coherent instead of scattered across Confluence pages.
+    </li>
+    <li>
+      <strong>Agents on your rails, not a blank prompt</strong> — wire Cursor, Cline, or Claude Code with dry runs first;
+      automation follows your spec tree instead of inventing requirements in chat.
+    </li>
   </ul>
 </section>
 

@@ -1,0 +1,152 @@
+<article class="page">
+  <header class="page__header">
+    <p class="eyebrow">Concept</p>
+    <h1>Branching &amp; change-request flow</h1>
+    <p class="lead">
+      How Git branches in a <strong>waterfall-spec</strong> repo line up with the
+      <a href="/items/cr/">change request (CR)</a> lifecycle, which commands require
+      <code>develop</code> vs a <code>feature/CR-…</code> branch, and how you can add artifacts by hand.
+      Normative detail lives in <code>CURSOR.md</code> in your spec checkout; the
+      <a href="/reference/cli/">CLI reference</a> lists exact <code>branchRequirement</code> per command.
+    </p>
+  </header>
+
+  <section class="section">
+    <h2>Two branch roles</h2>
+    <ul class="feature-list">
+      <li>
+        <strong><code>develop</code></strong> — integration line for the spec tree. You do not author spec commits
+        directly on <code>develop</code> (only merges in reviewed work). The CLI expects
+        <code>develop</code> for <strong>opening</strong> a CR and for <strong>closing stories</strong>.
+      </li>
+      <li>
+        <strong><code>feature/CR-&lt;NNN&gt;</code> or <code>feature/CR-&lt;NNN&gt;-&lt;slug&gt;</code></strong> — one primary
+        CR per branch; all lifecycle edits for that CR happen here until integration. Lifecycle prompts,
+        <code>sys start</code>, horizontals, and <code>cr finish</code> run on this branch.
+      </li>
+      <li>
+        <strong>Other work</strong> (no single CR), e.g. typos in <code>CURSOR.md</code> or repo hygiene: use
+        <code>feature/&lt;short-slug&gt;</code> from <code>develop</code> — not <code>chore/*</code> and not
+        <code>cr-…</code> without the <code>feature/</code> prefix (see <code>CURSOR.md</code> § Git workflow).
+      </li>
+    </ul>
+  </section>
+
+  <section class="section section--muted">
+    <h2>Flow for CR-scoped work</h2>
+    <p>
+      <code>waterfall cr start</code> (on <code>develop</code>) creates the CR artifact and checks out the matching
+      <code>feature/CR-…</code> branch. You advance requirements and technical items on that branch, refresh
+      horizontals as needed, then <code>waterfall cr finish</code> merges back into <code>develop</code>.
+    </p>
+    <div class="diagram-wrap">
+      <pre class="mermaid">
+flowchart LR
+  dev([develop])
+  feat[feature/CR-NNN-…]
+  dev -->|cr start| feat
+  feat -->|lifecycle · sys · horizontals| feat
+  feat -->|cr finish| dev
+  dev -->|story close| dev
+      </pre>
+    </div>
+    <p class="cli-ref__cmd-lead">
+      Closing <code>STORY-*</code> folders is a <code>develop</code> operation in this model (see
+      <a href="/items/story/">Story (STORY)</a> and the CLI).
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>Commands by phase</h2>
+    <p>
+      All commands below assume your shell resolves the spec repo (e.g. <code>--spec-root</code> or
+      <code>.waterfall</code>). Global flags such as <code>--dry-run</code> and <code>--execute-agent</code> apply
+      as in the <a href="/reference/cli/">CLI reference</a>.
+    </p>
+    <div class="cli-ref__table-wrap">
+      <table class="cli-ref__table">
+        <thead>
+          <tr>
+            <th scope="col">Phase</th>
+            <th scope="col">Branch</th>
+            <th scope="col"><code>waterfall</code> commands</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Open a CR</td>
+            <td><code>develop</code></td>
+            <td><code>cr start &lt;description&gt;</code></td>
+          </tr>
+          <tr>
+            <td>CR → requirements theme</td>
+            <td><code>feature/CR-…</code></td>
+            <td><code>cr to rq</code> — or <code>cr all</code> (orchestrates the full CR-side pipeline in steps)</td>
+          </tr>
+          <tr>
+            <td>RQ → use cases</td>
+            <td><code>feature/CR-…</code></td>
+            <td><code>rq to uc</code> — or <code>rq all</code></td>
+          </tr>
+          <tr>
+            <td>UC → stories / tests</td>
+            <td><code>feature/CR-…</code></td>
+            <td>
+              <code>uc to story</code>, <code>uc to test</code>, <code>test to story</code> — or
+              <code>uc all</code>, <code>test all</code>
+            </td>
+          </tr>
+          <tr>
+            <td>New subsystem (optional)</td>
+            <td><code>feature/CR-…</code></td>
+            <td><code>sys start &lt;description&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Cross-cutting models</td>
+            <td><code>feature/CR-…</code></td>
+            <td><code>horizontal create story …</code>, <code>horizontal update &lt;NNN&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Merge CR into <code>develop</code></td>
+            <td><code>feature/CR-…</code></td>
+            <td><code>cr finish</code></td>
+          </tr>
+          <tr>
+            <td>Mark stories closed</td>
+            <td><code>develop</code></td>
+            <td><code>story close STORY-NNN</code>, <code>story close all</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cli-ref__cmd-lead">
+      <code>help</code>, <code>spec init</code>, and <code>help -o json</code> do not enforce spec-repo branch checks
+      the same way; see each command’s <strong>Branch</strong> line in the reference.
+    </p>
+  </section>
+
+  <section class="section section--muted">
+    <h2>Manual addition (without the CLI)</h2>
+    <p>You can create or edit markdown by hand as long as Git rules still hold:</p>
+    <ul class="feature-list">
+      <li>
+        Stay on the correct branch: <code>develop</code> only for merges and story-close policy; author CR-scoped
+        spec changes on <code>feature/CR-&lt;NNN&gt;-…</code> created from up-to-date <code>develop</code>.
+      </li>
+      <li>
+        Allocate new typed ids by scanning existing folder names (next free index per kind), create folders per
+        <a href="/items/repository-structure/">Repository structure</a>, and keep
+        <code>## Links and dependencies</code> coherent — same as agent-driven edits.
+      </li>
+      <li>
+        You may run <strong>individual</strong> CLI steps later (e.g. hand-wrote <code>CR</code> and <code>RQ</code>,
+        then <code>waterfall rq to uc …</code> on the feature branch) as long as the branch matches the command’s
+        requirements.
+      </li>
+      <li>
+        For a <strong>new</strong> spec repo, <code>waterfall spec init</code> scaffolds the tree (and may initialize
+        Git on <code>develop</code>); after that, follow <code>CURSOR.md</code> for branching.
+      </li>
+    </ul>
+  </section>
+</article>
