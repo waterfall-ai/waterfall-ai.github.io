@@ -8,7 +8,6 @@ import { buildHeaderNav } from "./lib/nav-html.js";
 import { buildSiteHeader } from "./lib/header-html.js";
 import { parseCliHelpJson } from "./lib/cli-help-json.js";
 import { buildCliReferenceArticle } from "./lib/cli-reference-html.js";
-import { runWaterfallCliHelpJson } from "./lib/run-cli-help.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** Project root (parent of `src/` when running from compiled `dist/build.js`). */
@@ -50,6 +49,10 @@ function main(): void {
     path.join(srcDir, "assets", "logo-waterfall.svg"),
     path.join(outDir, "assets", "logo-waterfall.svg"),
   );
+  fs.copyFileSync(
+    path.join(srcDir, "assets", "cli-help.json"),
+    path.join(outDir, "assets", "cli-help.json"),
+  );
   const integrationsSrc = path.join(srcDir, "assets", "integrations");
   if (fs.existsSync(integrationsSrc)) {
     fs.cpSync(integrationsSrc, path.join(outDir, "assets", "integrations"), {
@@ -75,7 +78,7 @@ function main(): void {
   const nav = navTree();
   const pagesDir = path.join(srcDir, "pages");
 
-  let cliHelpJsonRaw: string | undefined;
+  const cliHelpJsonRaw = readUtf8(path.join(srcDir, "assets", "cli-help.json"));
 
   for (const page of PAGES) {
     const urlPath = pageUrlPath(page.segments);
@@ -85,13 +88,6 @@ function main(): void {
     let mainHtml: string;
     let refMeta: { title: string; description: string } | null = null;
     if (page.cliReferenceIntroFile) {
-      if (!cliHelpJsonRaw) {
-        cliHelpJsonRaw = runWaterfallCliHelpJson(root);
-        writeUtf8(
-          path.join(outDir, "assets", "cli-help.json"),
-          cliHelpJsonRaw,
-        );
-      }
       const data = parseCliHelpJson(cliHelpJsonRaw);
       const intro = readUtf8(path.join(pagesDir, page.cliReferenceIntroFile));
       mainHtml = buildCliReferenceArticle(intro, data);

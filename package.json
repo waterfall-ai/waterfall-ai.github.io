@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:cli-help": "node ../waterfall-cli/bin/waterfall.mjs help -o json > src/assets/cli-help.json",
     "build": "tsc && node dist/build.js",
     "preview": "npm run build && npx --yes serve dist-site -p 4173",
     "clean": "rm -rf dist-site",

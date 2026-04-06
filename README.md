@@ -17,17 +17,21 @@ Static marketing / product site for Waterfall, built from HTML templates via Typ
 - **Partials:** `src/templates/partials/footer.html` (`{{YEAR}}`).
 - **Header + nav:** `src/lib/nav-html.ts`, `src/lib/header-html.ts` (GitHub **Contribute** badge URL: `GITHUB_REPO_URL` in `src/lib/site.ts`, or override at build with env `WATERFALL_GITHUB_URL`).
 - **Site map:** `src/lib/site.ts` (`PAGES`, `navTree`).
-- **CLI reference HTML:** `src/lib/cli-reference-html.ts`, `src/lib/cli-help-json.ts`, `src/lib/run-cli-help.ts`.
+- **CLI reference HTML:** `src/lib/cli-reference-html.ts`, `src/lib/cli-help-json.ts` (from snapshot `src/assets/cli-help.json`).
 - **Diagrams:** [Mermaid](https://mermaid.js.org/) — add `<pre class="mermaid">…</pre>` with diagram syntax in any `src/pages/*.html`. Build copies `node_modules/mermaid/dist` → `dist-site/assets/mermaid-dist/`; `layout.html` runs `mermaid.run()` after DOM ready. The home workflow diagram uses `mermaid--workflow-cr-edges` plus `data-cr1-edges` / `data-cr2-edges` so the first N / next M edges get blue/amber strokes (Mermaid’s dark theme CSS otherwise overrides `linkStyle`).
 
 ### CLI reference build
 
-`npm run build` runs `node ../waterfall-cli/bin/waterfall.mjs help -o json` (with `cwd` set to the **waterfall-cli** package so `tsx` resolves). Outputs:
+`npm run build` reads checked-in `src/assets/cli-help.json` and emits:
 
 - `/reference/cli/` page content: global options, **environment variables** (`environment` in JSON), config summary, **`.waterfall` file format** (`dotWaterfall`), spec root resolution, and commands (each with CLI line + example).
 - `dist-site/assets/cli-help.json` — same JSON for tooling (`environment`, `cliForm` / `example` per command, etc.).
 
-**Requirements:** sibling checkout `waterfall-cli` with `npm install` done there, or set **`WATERFALL_CLI_ROOT`** to an absolute path to that package.
+To refresh the snapshot from local CLI:
+
+```bash
+npm run generate:cli-help
+```
 
 ## Build
 
@@ -48,7 +52,7 @@ Serves `dist-site` at [http://localhost:4173](http://localhost:4173) (one-off `s
 
 ## Docker (nginx)
 
-Requires a **successful** `npm run build` first (including CLI JSON step if you want the reference page):
+Requires a **successful** `npm run build` first:
 
 ```bash
 npm run build
