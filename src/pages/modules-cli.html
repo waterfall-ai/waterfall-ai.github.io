@@ -32,7 +32,7 @@ waterfall --help</code></pre>
     <p>
       After install, confirm the binary is on your <code>PATH</code>, then scaffold a new <strong>waterfall-spec</strong> repository with
       <code>waterfall spec init</code>. That command creates <code>pom.json</code>, the standard directories
-      (<code>changerequests/</code>, <code>requirements/</code>, <code>technical/</code>, <code>tests/</code>, …),
+      (<code>changerequests/</code>, <code>requirements/</code>, <code>technical/</code>, <code>horizontals/</code>, <code>tests/</code>, …),
       <code>CURSOR.md</code>, and an initial Git repo on branch <code>develop</code>. New item ids are derived from existing folders when you run scaffold commands, not from a separate counter file.
     </p>
 
@@ -45,21 +45,21 @@ waterfall --help</code></pre>
     <h3>Example: Bookstore-style lifecycle</h3>
     <p>
       Below is the core <code>waterfall …</code> sequence from the Waterfall project’s
-      <a href="https://github.com/waterfall-spec/waterfall/blob/main/waterfall-cli/tests/bookstore/run-integration.sh"><code>run-integration.sh</code></a>
-      driver (minus a deliberate “second <code>cr start</code> must fail” check), stopping before PDF export and work-item sync.
+      <a href="https://github.com/waterfall-spec/waterfall/blob/main/waterfall-cli/tests/bookstore/run-create-bookstore-spec.sh"><code>run-create-bookstore-spec.sh</code></a>
+      driver (minus a deliberate “second <code>cr create</code> must fail” check), stopping before PDF export and work-item sync.
       You only need Git, Node, and <code>@pknx/waterfall-cli</code>; work in a fresh directory that becomes the spec root after <code>spec init</code>.
       Configure backends and dry-run vs execute in <code>.waterfall</code> (see above).
     </p>
     <pre class="cli-ref__snippet"><code>mkdir bookstore-spec &amp;&amp; cd bookstore-spec
 waterfall spec init --title "Bookstore" .
 
-waterfall cr start \
+waterfall cr create \
   "Bookstore: product catalog, cart, checkout, and order history"
 
-waterfall sys start \
+waterfall sys create \
   "Bookstore backend: catalog, cart, checkout, and order APIs."
 
-waterfall sys start \
+waterfall sys create \
   "Bookstore storefront: browse, cart, checkout, account UI."
 
 waterfall horizontal create story database-model \
@@ -92,7 +92,7 @@ waterfall horizontal update 003
 
 waterfall cr finish
 
-waterfall cr start \
+waterfall cr create \
   "Bookstore: modern responsive Amazon-like ecommerce storefront (product grid, search, cart/checkout UX)."
 
 waterfall cr to rq \
@@ -108,7 +108,7 @@ waterfall horizontal update 003
 waterfall cr finish</code></pre>
     <p>
       The integration script in the repo runs these via <code>node …/bin/waterfall.mjs</code> from a parent folder with the spec in <code>./spec</code>; here everything uses
-      <code>.</code> as the spec root after <code>cd bookstore-spec</code>. Branch rules still apply (e.g. <code>cr finish</code> merges the feature branch to <code>develop</code> before the second <code>cr start</code>).
+      <code>.</code> as the spec root after <code>cd bookstore-spec</code>. Branch rules still apply (e.g. <code>cr finish</code> merges the feature branch to <code>develop</code> before the second <code>cr create</code>).
     </p>
 
     <h3>What to do next</h3>
@@ -117,7 +117,7 @@ waterfall cr finish</code></pre>
       <li>Add a <code>.waterfall</code> file in the spec repo or your home directory for defaults (backend, dry-run, log level); see <a href="/reference/cli/#config">configuration</a> in the reference.</li>
       <li>For a reference <code>.waterfall</code> used with this scenario, see
       <a href="https://github.com/waterfall-spec/waterfall/blob/main/waterfall-cli/tests/bookstore/.waterfall"><code>tests/bookstore/.waterfall</code></a> on GitHub.</li>
-      <li>On <code>develop</code>, open work with <code>waterfall cr start "…"</code> (see <a href="/reference/cli/#general-examples">general examples</a>).</li>
+      <li>On <code>develop</code>, open work with <code>waterfall cr create "…"</code> (see <a href="/reference/cli/#general-examples">general examples</a>).</li>
     </ul>
   </section>
 
@@ -125,8 +125,8 @@ waterfall cr finish</code></pre>
     <h2>What it does</h2>
     <ul class="feature-list">
       <li>Resolve your spec root via <code>.waterfall</code>, flags, <code>waterfall.json</code>, or walk-up discovery.</li>
-      <li>CR lifecycle: <code>cr start</code>, stepwise edges (<code>cr to rq</code>, …), <code>cr all</code>, <code>cr finish</code>.</li>
-      <li>Subsystem and horizontal scaffolds: <code>sys start</code>, <code>horizontal create</code> / <code>horizontal update</code>.</li>
+      <li>CR lifecycle: <code>cr create</code>, stepwise edges (<code>cr to rq</code>, …), <code>cr all</code>, <code>cr finish</code>.</li>
+      <li>Subsystem, bug, and horizontal scaffolds: <code>sys create</code>, <code>bug create</code>, <code>bug close</code>, <code>horizontal create</code> / <code>horizontal update</code>; <code>story close</code> for delivered stories.</li>
       <li>Backends: <code>cline-ollama</code>, Cursor, Claude Code—with <code>embed</code> or <code>reference</code> prompt delivery.</li>
     </ul>
   </section>

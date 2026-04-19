@@ -916,6 +916,27 @@ code {
   font-size: 0.95rem;
 }
 
+.cli-ref__cmd-group {
+  margin-top: 2rem;
+}
+
+.cli-ref__cmd-group:first-child {
+  margin-top: 0;
+}
+
+.cli-ref__group-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.cli-ref__group-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0 0 1rem;
+  max-width: 52rem;
+}
+
 .cli-ref__commands {
   display: flex;
   flex-direction: column;
@@ -1027,6 +1048,12 @@ code {
 
 .cli-ref__prompt,
 .cli-ref__orch,
+.cli-ref__versions {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0;
+}
+
 .cli-ref__branch {
   font-size: 0.88rem;
   margin: 0.35rem 0;

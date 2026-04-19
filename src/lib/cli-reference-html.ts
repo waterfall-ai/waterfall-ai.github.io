@@ -233,16 +233,51 @@ function renderCommand(c: CliHelpJson["commands"][0]): string {
 <p class="cli-ref__summary">${esc(c.summary)}</p>
 <p class="cli-ref__example"><strong>Example:</strong> <code>${example}</code></p>
 <p class="cli-ref__branch"><strong>Branch:</strong> ${esc(c.branchRequirement)}</p>
+<p class="cli-ref__versions"><strong>Since</strong> <code>${esc(c.sinceVersion)}</code> · <strong>Help last changed</strong> <code>${esc(c.lastChangedVersion)}</code></p>
 <p class="cli-ref__meta"><span class="cli-ref__kind">${esc(c.kind)}</span> · spec root: <strong>${c.requiresSpecRoot ? "required" : "not required"}</strong>${argv ? ` · argv prefix: <code>${argv}</code>` : ""}</p>
 ${sub}
 </details>`;
 }
 
 function renderCommands(j: CliHelpJson): string {
-  const blocks = j.commands.map(renderCommand).join("\n");
+  const byGroup = new Map<string, CliHelpJson["commands"]>();
+  for (const g of j.commandGroups) {
+    byGroup.set(g.id, []);
+  }
+  for (const c of j.commands) {
+    const list = byGroup.get(c.group);
+    if (list) list.push(c);
+    else {
+      const fallback: CliHelpJson["commands"] = byGroup.get("__ungrouped") ?? [];
+      if (!byGroup.has("__ungrouped")) byGroup.set("__ungrouped", fallback);
+      fallback.push(c);
+    }
+  }
+  const sortById = (a: (typeof j.commands)[0], b: (typeof j.commands)[0]) =>
+    a.id.localeCompare(b.id);
+  const sections: string[] = [];
+  for (const g of j.commandGroups) {
+    const cmds = (byGroup.get(g.id) ?? []).slice().sort(sortById);
+    if (cmds.length === 0) continue;
+    const desc = g.description
+      ? `<p class="cli-ref__group-desc">${esc(g.description)}</p>`
+      : "";
+    sections.push(`<section class="cli-ref__cmd-group" aria-labelledby="cmd-group-${esc(g.id)}">
+<h3 class="cli-ref__group-title" id="cmd-group-${esc(g.id)}">${esc(g.title)}</h3>
+${desc}
+<div class="cli-ref__commands">${cmds.map(renderCommand).join("\n")}</div>
+</section>`);
+  }
+  const ung = byGroup.get("__ungrouped");
+  if (ung && ung.length > 0) {
+    sections.push(`<section class="cli-ref__cmd-group">
+<h3 class="cli-ref__group-title">Other</h3>
+<div class="cli-ref__commands">${ung.slice().sort(sortById).map(renderCommand).join("\n")}</div>
+</section>`);
+  }
   return `<h2 id="commands">Commands</h2>
-<p class="cli-ref__cmd-lead">${j.commands.length} commands (expand each row).</p>
-<div class="cli-ref__commands">${blocks}</div>`;
+<p class="cli-ref__cmd-lead">${j.commands.length} commands in ${j.commandGroups.length} groups (expand each row).</p>
+${sections.join("\n")}`;
 }
 
 /**

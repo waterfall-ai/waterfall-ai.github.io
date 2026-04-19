@@ -17,12 +17,12 @@
       <li>
         <strong><code>develop</code></strong> — integration line for the spec tree. You do not author spec commits
         directly on <code>develop</code> (only merges in reviewed work). The CLI expects
-        <code>develop</code> for <strong>opening</strong> a CR and for <strong>closing stories</strong>.
+        <code>develop</code> for <strong>opening</strong> a CR, <strong>creating bugs</strong> against an existing SYS, and for <strong>closing stories</strong>.
       </li>
       <li>
         <strong><code>feature/CR-&lt;NNN&gt;</code> or <code>feature/CR-&lt;NNN&gt;-&lt;slug&gt;</code></strong> — one primary
         CR per branch; all lifecycle edits for that CR happen here until integration. Lifecycle prompts,
-        <code>sys start</code>, horizontals, and <code>cr finish</code> run on this branch.
+        <code>sys create</code>, horizontals, and <code>cr finish</code> run on this branch.
       </li>
       <li>
         <strong>Other work</strong> (no single CR), e.g. typos in <code>CURSOR.md</code> or repo hygiene: use
@@ -35,7 +35,7 @@
   <section class="section section--muted">
     <h2>Flow for CR-scoped work</h2>
     <p>
-      <code>waterfall cr start</code> (on <code>develop</code>) creates the CR artifact and checks out the matching
+      <code>waterfall cr create</code> (on <code>develop</code>) creates the CR artifact and checks out the matching
       <code>feature/CR-…</code> branch. You advance requirements and technical items on that branch, refresh
       horizontals as needed, then <code>waterfall cr finish</code> merges back into <code>develop</code>.
     </p>
@@ -44,7 +44,7 @@
 flowchart LR
   dev([develop])
   feat[feature/CR-NNN-…]
-  dev -->|cr start| feat
+  dev -->|cr create| feat
   feat -->|lifecycle · sys · horizontals| feat
   feat -->|cr finish| dev
   dev -->|story close| dev
@@ -76,7 +76,7 @@ flowchart LR
           <tr>
             <td>Open a CR</td>
             <td><code>develop</code></td>
-            <td><code>cr start &lt;description&gt;</code></td>
+            <td><code>cr create &lt;description&gt;</code></td>
           </tr>
           <tr>
             <td>CR → requirements theme</td>
@@ -99,7 +99,12 @@ flowchart LR
           <tr>
             <td>New subsystem (optional)</td>
             <td><code>feature/CR-…</code></td>
-            <td><code>sys start &lt;description&gt;</code></td>
+            <td><code>sys create &lt;description&gt;</code></td>
+          </tr>
+          <tr>
+            <td>New bug under SYS</td>
+            <td><code>develop</code></td>
+            <td><code>bug create SYS-NNN &lt;hint&gt;</code></td>
           </tr>
           <tr>
             <td>Cross-cutting models</td>
@@ -114,7 +119,12 @@ flowchart LR
           <tr>
             <td>Mark stories closed</td>
             <td><code>develop</code></td>
-            <td><code>story close STORY-NNN</code>, <code>story close all</code></td>
+            <td><code>story close STORY-NNN […]</code>, <code>story close all STORY-NNN […]</code></td>
+          </tr>
+          <tr>
+            <td>Mark bugs closed</td>
+            <td><code>develop</code></td>
+            <td><code>bug close BUG-NNN</code></td>
           </tr>
         </tbody>
       </table>

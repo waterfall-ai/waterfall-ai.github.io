@@ -27,7 +27,8 @@
 <div class="cli-ref__intro-block">
   <p>
     Top-level fields include
-    <code>commands</code>, <code>globalOptions</code>, <code>environment</code>
+    <code>commands</code>, <code>commandGroups</code> (section titles for the HTML below; each command has a matching <code>group</code> id),
+    <code>globalOptions</code>, <code>environment</code>
     (rendered below as <a href="#environment-variables">Environment variables</a>),
     <code>config</code> (precedence, file locations, and <code>config.notes</code> such as lifecycle status)
     and <code>dotWaterfall</code> (both rendered under
@@ -35,10 +36,12 @@
     <code>specResolution</code>, plus <code>name</code> and <code>title</code>.
   </p>
   <p>
+    Commands are grouped below (e.g. lifecycle vs sync vs implement) using <code>commandGroups</code>.
     Each command row shows the full <code>waterfall …</code> invocation (from <code>cliForm</code>)
     with a <strong>Copy</strong> control; the dotted internal <code>id</code> sits on the right.
     Expand a row for the summary, a concrete <strong>Example</strong>, the required spec-repo
-    <strong>Branch</strong> (from <code>branchRequirement</code>), and optional
+    <strong>Branch</strong> (from <code>branchRequirement</code>),
+    <strong>Since</strong> / <strong>Help last changed</strong> (from <code>sinceVersion</code> / <code>lastChangedVersion</code>), and optional
     <code>argvPrefix</code>, <code>positionals</code>, <code>commandOptions</code>,
     <code>promptFile</code>, and <code>orchestrationSteps</code> in the JSON.
   </p>
@@ -48,7 +51,7 @@
 <p class="cli-ref__intro-block">
   These are typical invocations; branch rules still apply (see each command’s <strong>Branch</strong> line below).
   Global flags such as <code>--spec-root</code>, <code>--dry-run</code>, and <code>--execute-agent</code> can go
-  before the subcommand or after it (e.g. <code>waterfall cr start --execute-agent &quot;…&quot;</code>).
+  before the subcommand or after it (e.g. <code>waterfall cr create --execute-agent &quot;…&quot;</code>).
   The same switches are mirrored by <code>WATERFALL_DRY_RUN</code> and <code>WATERFALL_EXECUTE_AGENT</code> for containers and CI
   (see <a href="#global-options">Global options</a> and <a href="#environment-variables">Environment variables</a>).
 </p>
@@ -60,7 +63,7 @@ waterfall help -o json</code></pre>
   </li>
   <li>
     <p><strong>Open a change request</strong> (spec repo on <code>develop</code>).</p>
-    <pre class="cli-ref__snippet"><code>waterfall cr start "OAuth login for partners"</code></pre>
+    <pre class="cli-ref__snippet"><code>waterfall cr create "OAuth login for partners"</code></pre>
   </li>
   <li>
     <p><strong>Lifecycle agent step</strong> on <code>feature/CR-…</code> with an <a href="#operator-hint">inline hint</a> (plan only).</p>
@@ -107,8 +110,8 @@ Line two' | waterfall uc to story -</code></pre>
 
 <p class="cli-ref__branch-note">
   <strong>Branch policy:</strong> each command documents the required git branch in the spec repo
-  (expanded row and <code>branchRequirement</code> in JSON). In short: <code>cr start</code> and
-  <code>story close</code> on <code>develop</code>; lifecycle prompts, horizontals,
-  <code>sys start</code>, and <code>cr finish</code> on <code>feature/CR-…</code> — see your spec’s
+  (expanded row and <code>branchRequirement</code> in JSON). In short: <code>cr create</code>,
+  <code>bug create</code>, <code>story close</code>, and <code>bug close</code> on <code>develop</code>; lifecycle prompts, horizontals,
+  <code>sys create</code>, and <code>cr finish</code> on <code>feature/CR-…</code> — see your spec’s
   <code>CURSOR.md</code>.
 </p>

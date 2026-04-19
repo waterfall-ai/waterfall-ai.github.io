@@ -91,7 +91,7 @@ export const PAGES: PageDef[] = [
   {
     segments: ["items", "hor"],
     title: "Concept: Horizontal (HOR) — Waterfall",
-    description: "Horizontals: cross-cutting data, API, and stack models under technical/horizontals/.",
+    description: "Horizontals: cross-cutting data, API, and stack models under horizontals/.",
     bodyFile: "items-hor.html",
   },
   {

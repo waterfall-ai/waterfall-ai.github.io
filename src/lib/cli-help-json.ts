@@ -83,10 +83,22 @@ export type CliHelpJsonCommand = {
   requiresSpecRoot: boolean;
   /** Required git branch in the spec repo (or N/A); mirrors CLI \`git-branch-guards\`. */
   branchRequirement: string;
+  /** Section id matching \`commandGroups[].id\`. */
+  group: string;
+  /** Semver: first CLI release that documented this command in machine help. */
+  sinceVersion: string;
+  /** Semver: CLI release that last changed this command’s help metadata. */
+  lastChangedVersion: string;
   positionals?: CliHelpJsonPositional[];
   commandOptions?: CliHelpJsonCommandOption[];
   promptFile?: string;
   orchestrationSteps?: string[];
+};
+
+export type CliHelpJsonCommandGroup = {
+  id: string;
+  title: string;
+  description?: string;
 };
 
 export type CliHelpJson = {
@@ -103,6 +115,7 @@ export type CliHelpJson = {
   environment: CliHelpJsonEnvironment;
   operatorHint: CliHelpJsonOperatorHint;
   specResolution: string[];
+  commandGroups: CliHelpJsonCommandGroup[];
   commands: CliHelpJsonCommand[];
 };
 
@@ -123,10 +136,28 @@ export function parseCliHelpJson(raw: string): CliHelpJson {
   if (!j.operatorHint || !Array.isArray(j.operatorHint.modes)) {
     throw new Error("Invalid cli-help JSON: missing operatorHint");
   }
+  if (!Array.isArray(j.commandGroups)) {
+    throw new Error("Invalid cli-help JSON: missing commandGroups");
+  }
   for (const cmd of j.commands) {
     if (typeof cmd.branchRequirement !== "string") {
       throw new Error(
         `Invalid cli-help JSON: command ${String(cmd.id)} missing branchRequirement`,
+      );
+    }
+    if (typeof cmd.group !== "string") {
+      throw new Error(
+        `Invalid cli-help JSON: command ${String(cmd.id)} missing group`,
+      );
+    }
+    if (typeof cmd.sinceVersion !== "string") {
+      throw new Error(
+        `Invalid cli-help JSON: command ${String(cmd.id)} missing sinceVersion`,
+      );
+    }
+    if (typeof cmd.lastChangedVersion !== "string") {
+      throw new Error(
+        `Invalid cli-help JSON: command ${String(cmd.id)} missing lastChangedVersion`,
       );
     }
   }

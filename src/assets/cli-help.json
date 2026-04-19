@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "waterfall",
+  "version": "0.1.5",
   "title": "Waterfall CLI — waterfall-spec workflows",
   "globalOptions": [
     {
@@ -55,7 +56,19 @@
     {
       "long": "quiet",
       "type": "boolean",
-      "description": "Same as --log-level silent (subprocess output unchanged)."
+      "description": "Same as --log-level silent (waterfall tracing only; agent subprocess still inherits the console unless agent_silent)."
+    },
+    {
+      "long": "agent-silent",
+      "type": "boolean",
+      "description": "Hide agent backend stdout/stderr (stdio ignore). Overrides .waterfall agent_silent= and WATERFALL_AGENT_SILENT.",
+      "env": "WATERFALL_AGENT_SILENT",
+      "dotWaterfallKey": "agent_silent"
+    },
+    {
+      "long": "no-agent-silent",
+      "type": "boolean",
+      "description": "Force agent subprocess output on the terminal (default when agent_silent is unset)."
     },
     {
       "long": "prompt-delivery",
@@ -175,6 +188,85 @@
       },
       {
         "keys": [
+          "project_prompts",
+          "projectprompts"
+        ],
+        "valueType": "string",
+        "description": "Directory under the spec root for project prompt overrides (default prompts). Set none or - to disable. Use waterfall prompts materialize to snapshot merged prompts here.",
+        "dotWaterfallKey": "project_prompts"
+      },
+      {
+        "keys": [
+          "projects_dir",
+          "projectsdir"
+        ],
+        "valueType": "path",
+        "description": "Directory for implementation repos / sys link targets. Relative paths resolve from cwd. If omitted, waterfall sys link uses <specRoot>/projects.",
+        "dotWaterfallKey": "projects_dir"
+      },
+      {
+        "keys": [
+          "implement_mode",
+          "implementmode"
+        ],
+        "valueType": "enum",
+        "enumValues": [
+          "inplace",
+          "branch-merge-develop",
+          "branch-with-pr"
+        ],
+        "description": "Default for waterfall implement when --mode and WATERFALL_IMPLEMENT_MODE are unset: inplace (no git in impl repo), branch-merge-develop (feature branch then merge to develop), branch-with-pr (push feature branch and open PR via gh when available).",
+        "dotWaterfallKey": "implement_mode",
+        "env": "WATERFALL_IMPLEMENT_MODE"
+      },
+      {
+        "keys": [
+          "agent_silent",
+          "agentsilent"
+        ],
+        "valueType": "boolean",
+        "description": "true: agent backend subprocess does not stream stdout/stderr to the terminal (stdio ignore). false/omit: agent output goes to the waterfall console (default). Separate from level= (CLI tracing only).",
+        "dotWaterfallKey": "agent_silent",
+        "env": "WATERFALL_AGENT_SILENT"
+      },
+      {
+        "keys": [
+          "prompt_pack",
+          "promptpack"
+        ],
+        "valueType": "path",
+        "description": "Optional pack directory (mirrors CLI prompts/: commands/, global/). `.waterfall` only — no env/CLI flag.",
+        "dotWaterfallKey": "prompt_pack"
+      },
+      {
+        "keys": [
+          "prompt_pack_git",
+          "promptpackgit"
+        ],
+        "valueType": "string",
+        "description": "Git URL; clone/update under ~/.cache/waterfall/prompt-packs/. Local prompt_pack= wins. `.waterfall` only.",
+        "dotWaterfallKey": "prompt_pack_git"
+      },
+      {
+        "keys": [
+          "prompt_pack_ref",
+          "promptpackref"
+        ],
+        "valueType": "string",
+        "description": "Branch or tag for prompt_pack_git (default main).",
+        "dotWaterfallKey": "prompt_pack_ref"
+      },
+      {
+        "keys": [
+          "prompt_pack_prefix",
+          "promptpackprefix"
+        ],
+        "valueType": "string",
+        "description": "Subdirectory inside the pack root before commands/ and global/ (for monorepo layouts).",
+        "dotWaterfallKey": "prompt_pack_prefix"
+      },
+      {
+        "keys": [
           "use_native_pandoc",
           "usenativepandoc",
           "native_pandoc",
@@ -269,6 +361,12 @@
             "dotWaterfallKey": "level"
           },
           {
+            "name": "WATERFALL_AGENT_SILENT",
+            "description": "Hide agent backend stdout/stderr (stdio ignore). Overrides .waterfall agent_silent= and WATERFALL_AGENT_SILENT.",
+            "cliFlag": "--agent-silent",
+            "dotWaterfallKey": "agent_silent"
+          },
+          {
             "name": "WATERFALL_MMDC",
             "description": "Absolute path to the Mermaid CLI binary (`mmdc`) for `waterfall export pdf`; overrides PATH and npx fallback."
           },
@@ -345,7 +443,65 @@
     "waterfall.json waterfallSpecRelativePath (walk up from cwd)",
     "walk up to directory containing CURSOR.md"
   ],
+  "commandGroups": [
+    {
+      "id": "cli-meta",
+      "title": "CLI & workspace",
+      "description": "Version, help, scaffolding a new spec tree, queries (dependencies, list), release tags."
+    },
+    {
+      "id": "implement",
+      "title": "Implement (linked code)",
+      "description": "Run the agent in implementation repos linked from SYS (pom.json sysLinks)."
+    },
+    {
+      "id": "sync-remote",
+      "title": "Remote sync",
+      "description": "Compare and merge work items with external trackers (see .waterfall sync_*)."
+    },
+    {
+      "id": "export-prompts",
+      "title": "Export & prompt tooling",
+      "description": "PDF export and merged prompt pack materialization."
+    },
+    {
+      "id": "items-and-cr",
+      "title": "Items & change request",
+      "description": "Create CR, SYS, BUG, HOR; link repos; finish the change request branch."
+    },
+    {
+      "id": "lifecycle-edge",
+      "title": "Lifecycle (single step)",
+      "description": "One prompt per edge: CR→RQ, RQ→UC, UC→STORY, UC→TEST, TEST→STORY, comments."
+    },
+    {
+      "id": "lifecycle-batch",
+      "title": "Lifecycle (orchestration)",
+      "description": "Chained agent steps (cr all, rq all, uc all, test all)."
+    },
+    {
+      "id": "close-items",
+      "title": "Close items",
+      "description": "Close STORY and BUG folders on develop."
+    }
+  ],
   "commands": [
+    {
+      "id": "version",
+      "argvPrefix": [
+        "version"
+      ],
+      "usage": "version",
+      "example": "waterfall version",
+      "summary": "Print installed CLI version.",
+      "kind": "meta",
+      "requiresSpecRoot": false,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "group": "cli-meta",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "version"
+    },
     {
       "id": "help",
       "argvPrefix": [
@@ -365,6 +521,9 @@
           "description": "Output format; use \"json\" for the CLI command/options spec."
         }
       ],
+      "group": "cli-meta",
+      "lastChangedVersion": "0.1.5",
+      "sinceVersion": "0.1.4",
       "cliForm": "help [-o json | --output json]"
     },
     {
@@ -394,7 +553,190 @@
           "description": "Target directory (default: .)."
         }
       ],
+      "group": "cli-meta",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "spec init --title TITLE [DIR]"
+    },
+    {
+      "id": "dependencies",
+      "argvPrefix": [
+        "dependencies"
+      ],
+      "usage": "dependencies <item-type> <item-id>",
+      "example": "waterfall dependencies story STORY-001",
+      "summary": "Print upstream and downstream typed ids for one work item as JSON (identity **CR:**/**UC:**/… fields, ### Downstream references, and reverse links from other items).",
+      "kind": "query",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "positionals": [
+        {
+          "name": "item-type",
+          "required": true,
+          "description": "Artifact family: cr, rq, uc, story, tst, sys, bug, hor (aliases: st, test, horizontal)."
+        },
+        {
+          "name": "item-id",
+          "required": true,
+          "description": "PREFIX-NNN (e.g. STORY-022) or numeric NNN; must match item-type."
+        }
+      ],
+      "group": "cli-meta",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "dependencies <item-type> <item-id>"
+    },
+    {
+      "id": "list",
+      "argvPrefix": [
+        "list"
+      ],
+      "usage": "list <item-type> [in <ancestor-id>] [--include-closed|-a]",
+      "example": "waterfall list story in SYS-001",
+      "summary": "Print one canonical id per line (sorted) for work items of the given type. By default excludes closed items (**Status:** closed, or _STORY/_BUG folders). Optional `in SYS-001` filters by path segment or identity parent fields in the item markdown.",
+      "kind": "query",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "commandOptions": [
+        {
+          "long": "include-closed",
+          "short": "a",
+          "type": "boolean",
+          "description": "Include items whose **Status:** is closed (and closed story/bug folders)."
+        }
+      ],
+      "positionals": [
+        {
+          "name": "item-type",
+          "required": true,
+          "description": "Artifact family: cr, rq, uc, story, tst, sys, bug, hor (aliases: st, test, horizontal)."
+        },
+        {
+          "name": "in",
+          "required": false,
+          "description": "Literal word in, then ancestor id (e.g. in SYS-001)."
+        },
+        {
+          "name": "ancestor-id",
+          "required": false,
+          "description": "PREFIX-NNN — restrict to items under this ancestor in the tree or mentioning it in identity fields."
+        }
+      ],
+      "group": "cli-meta",
+      "sinceVersion": "0.1.5",
+      "lastChangedVersion": "0.1.5",
+      "cliForm": "list <item-type> [in <ancestor-id>] [--include-closed|-a]"
+    },
+    {
+      "id": "implement.story",
+      "argvPrefix": [
+        "implement",
+        "story"
+      ],
+      "usage": "implement story <item-id> [--mode <mode>] [<hint…>]",
+      "example": "waterfall implement story STORY-001 --mode inplace",
+      "summary": "Resolve SYS from the story path, require pom.json sysLinks for that SYS, then in the linked implementation repo: by default checkout develop and branch feature/<id> (unless --mode inplace). After a successful agent run: merge feature→develop (branch-merge-develop), or push + gh pr create (branch-with-pr). Default mode: .waterfall implement_mode= or branch-merge-develop. Runs prompts/commands/implement-story.md with full upstream/downstream ids in the agent system segment.",
+      "kind": "agent-prompt",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "promptFile": "prompts/commands/implement-story.md",
+      "commandOptions": [
+        {
+          "long": "mode",
+          "short": "m",
+          "metavar": "MODE",
+          "type": "enum",
+          "enumValues": [
+            "inplace",
+            "branch-merge-develop",
+            "branch-with-pr"
+          ],
+          "description": "Git workflow in the implementation repo. Overrides WATERFALL_IMPLEMENT_MODE and .waterfall implement_mode=."
+        }
+      ],
+      "positionals": [
+        {
+          "name": "item-id",
+          "required": true,
+          "description": "STORY-NNN or numeric NNN."
+        },
+        {
+          "name": "hint",
+          "required": false,
+          "description": "Optional operator notes appended to the agent hint."
+        }
+      ],
+      "group": "implement",
+      "sinceVersion": "0.1.5",
+      "lastChangedVersion": "0.1.5",
+      "cliForm": "implement story <item-id> [--mode <mode>] [<hint…>]"
+    },
+    {
+      "id": "implement.bug",
+      "argvPrefix": [
+        "implement",
+        "bug"
+      ],
+      "usage": "implement bug <item-id> [--mode <mode>] [<hint…>]",
+      "example": "waterfall implement bug BUG-001",
+      "summary": "Same as implement story for BUG-*: SYS resolution, sysLinks, optional git branch workflow (see --mode and implement_mode=), implement-bug.md and dependency JSON.",
+      "kind": "agent-prompt",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "promptFile": "prompts/commands/implement-bug.md",
+      "commandOptions": [
+        {
+          "long": "mode",
+          "short": "m",
+          "metavar": "MODE",
+          "type": "enum",
+          "enumValues": [
+            "inplace",
+            "branch-merge-develop",
+            "branch-with-pr"
+          ],
+          "description": "Git workflow in the implementation repo. Overrides WATERFALL_IMPLEMENT_MODE and .waterfall implement_mode=."
+        }
+      ],
+      "positionals": [
+        {
+          "name": "item-id",
+          "required": true,
+          "description": "BUG-NNN or numeric NNN."
+        },
+        {
+          "name": "hint",
+          "required": false,
+          "description": "Optional operator notes appended to the agent hint."
+        }
+      ],
+      "group": "implement",
+      "sinceVersion": "0.1.5",
+      "lastChangedVersion": "0.1.5",
+      "cliForm": "implement bug <item-id> [--mode <mode>] [<hint…>]"
+    },
+    {
+      "id": "tag.version",
+      "argvPrefix": [
+        "tag"
+      ],
+      "usage": "tag vMAJOR.MINOR.PATCH",
+      "example": "waterfall tag v1.2.4",
+      "summary": "On develop: create a lightweight git tag at HEAD. Tag name must look like v1.2.4 (leading \"v\" plus three dot-separated non-negative integers; no unnecessary leading zeros). Duplicate tag names fail with a git error.",
+      "kind": "git-mutate",
+      "requiresSpecRoot": true,
+      "branchRequirement": "Spec repo: current git branch must be \"develop\".",
+      "positionals": [
+        {
+          "name": "version",
+          "required": true,
+          "description": "Tag to create (e.g. v1.2.4). Format is validated before invoking git."
+        }
+      ],
+      "group": "cli-meta",
+      "sinceVersion": "0.1.5",
+      "lastChangedVersion": "0.1.5",
+      "cliForm": "tag vMAJOR.MINOR.PATCH"
     },
     {
       "id": "sync.stories",
@@ -422,6 +764,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "sync-remote",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "sync stories [--dump-spec] [<hint…>]"
     },
     {
@@ -450,6 +795,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "sync-remote",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "sync bugs [--dump-spec] [<hint…>]"
     },
     {
@@ -458,13 +806,24 @@
         "export",
         "pdf"
       ],
-      "usage": "export pdf [--items LIST | --items=LIST] [-o PATH | --output PATH]",
-      "example": "waterfall export pdf --items CR,RQ,UC,HOR,TST",
-      "summary": "Merge selected spec markdown into one document, render fenced Mermaid diagrams to PNG via bundled @mermaid-js/mermaid-cli (mmdc), then produce PDF with pandoc-wasm (Markdown→HTML) and puppeteer (HTML→PDF, Chromium bundled). Requires a clean git working tree at the spec root. --items is a comma-separated list of artifact codes (CR,RQ,UC,SYS,STORY,BUG,HOR,TST,CURSOR); default CR,RQ,UC,HOR,TST excludes CURSOR.md, prompts/, doc/, docs/, SYS/STORY/BUG bodies, etc. Document title (PDF metadata and top heading): non-empty string \"title\" from pom.json, found by walking up from the spec root until pom.json exists (see spec init --title). Default output: <spec-root>/docs/<basename>-<tag|short-hash>.pdf. Optional -o overrides the output file path. use_native_pandoc=true in .waterfall uses system pandoc (WATERFALL_PANDOC_ARGS).",
+      "usage": "export pdf [--mode snapshot|release] [--items LIST | --items=LIST] [-o PATH | --output PATH]",
+      "example": "waterfall export pdf --mode release --items CR,RQ,UC,HOR,TST",
+      "summary": "Merge selected spec markdown into one document, render fenced Mermaid diagrams to PNG via bundled @mermaid-js/mermaid-cli (mmdc), then produce PDF with pandoc-wasm (Markdown→HTML) and puppeteer (HTML→PDF, Chromium bundled). --mode snapshot (default): any branch; dirty working tree allowed; default PDF <spec-root>/output/<basename>-<short-hash>.pdf. --mode release: only on develop with a clean working tree; default PDF <spec-root>/docs/<basename>-<tag-or-short-hash>.pdf (tag name when HEAD is tagged, else hash). Optional -o overrides the output path for either mode. --items is a comma-separated list of artifact codes (CR,RQ,UC,SYS,STORY,BUG,HOR,TST,CURSOR); default CR,RQ,UC,HOR,TST excludes CURSOR.md, prompts/, doc/, SYS/STORY/BUG bodies, etc. Document title from pom.json (see spec init --title). use_native_pandoc=true in .waterfall uses system pandoc (WATERFALL_PANDOC_ARGS).",
       "kind": "export",
       "requiresSpecRoot": true,
       "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
       "commandOptions": [
+        {
+          "long": "mode",
+          "metavar": "M",
+          "type": "enum",
+          "enumValues": [
+            "snapshot",
+            "release"
+          ],
+          "default": "snapshot",
+          "description": "snapshot: default path under output/ with short hash; any branch; dirty OK. release: default path under docs/ with tag or hash; requires develop and clean tree."
+        },
         {
           "long": "items",
           "type": "string",
@@ -474,24 +833,68 @@
           "long": "output",
           "short": "o",
           "type": "string",
-          "description": "Output PDF path (default: <spec-root>/docs/<basename>-<tag|hash>.pdf). Relative to cwd."
+          "description": "Output PDF path (overrides --mode default; relative to cwd)."
         }
       ],
-      "cliForm": "export pdf [--items LIST | --items=LIST] [-o PATH | --output PATH]"
+      "group": "export-prompts",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "export pdf [--mode snapshot|release] [--items LIST | --items=LIST] [-o PATH | --output PATH]"
     },
     {
-      "id": "cr.start",
+      "id": "prompts.materialize",
+      "argvPrefix": [
+        "prompts",
+        "materialize"
+      ],
+      "usage": "prompts materialize",
+      "example": "waterfall prompts materialize",
+      "summary": "Write the merged effective prompt tree (bundled CLI + `.waterfall` prompt_pack / git + spec `project_prompts/`) into the spec repo. Destination: `project_prompts` relative path (default `prompts` under the spec root) unless `project_prompts=none`.",
+      "kind": "export",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "group": "export-prompts",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "prompts materialize"
+    },
+    {
+      "id": "prompts.export",
+      "argvPrefix": [
+        "prompts",
+        "export"
+      ],
+      "usage": "prompts export <folder>",
+      "example": "waterfall prompts export ./my-shared-prompt-pack",
+      "summary": "Write the same merged tree to an arbitrary folder (e.g. monorepo subpath) so it can be committed as a standalone prompt-pack repository; layout is always `commands/`, `global/`, `items/` at the chosen folder root or nested path.",
+      "kind": "export",
+      "requiresSpecRoot": true,
+      "branchRequirement": "No spec-root git branch check (this command does not resolve a waterfall-spec checkout).",
+      "positionals": [
+        {
+          "name": "folder",
+          "required": true,
+          "description": "Output directory (absolute or relative to cwd). May be nested (e.g. vendor/acme-prompts)."
+        }
+      ],
+      "group": "export-prompts",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "prompts export <folder>"
+    },
+    {
+      "id": "cr.create",
       "argvPrefix": [
         "cr",
-        "start"
+        "create"
       ],
-      "usage": "cr start <description>",
-      "example": "waterfall cr start \"Payment retry handling\"",
-      "summary": "On develop: new feature/CR-* branch, scaffold CR-NNN.md (next id from existing changerequests/) and commit, then agent prompt cr-start.md to synthesize Summary/Proposed change (--execute-agent or dry-run).",
+      "usage": "cr create <description>",
+      "example": "waterfall cr create \"Payment retry handling\"",
+      "summary": "On develop: new feature/CR-* branch, scaffold CR-NNN.md (next id from existing changerequests/) and commit, then agent prompt cr-create.md to synthesize Summary/Proposed change (--execute-agent or dry-run).",
       "kind": "git-branch",
       "requiresSpecRoot": true,
       "branchRequirement": "Spec repo: current git branch must be \"develop\".",
-      "promptFile": "prompts/commands/cr-start.md",
+      "promptFile": "prompts/commands/cr-create.md",
       "positionals": [
         {
           "name": "description",
@@ -499,21 +902,24 @@
           "description": "CR title / slug source. Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
-      "cliForm": "cr start <description>"
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "cr create <description>"
     },
     {
-      "id": "sys.start",
+      "id": "sys.create",
       "argvPrefix": [
         "sys",
-        "start"
+        "create"
       ],
-      "usage": "sys start <description>",
-      "example": "waterfall sys start \"Authentication subsystem\"",
-      "summary": "On a CR branch: scaffold SYS-NNN.md (next id from existing technical/SYS-* folders) and commit, then agent prompt sys-start.md to synthesize Purpose (--execute-agent or dry-run).",
+      "usage": "sys create <description>",
+      "example": "waterfall sys create \"Authentication subsystem\"",
+      "summary": "On a CR branch: scaffold SYS-NNN.md (next id from existing technical/SYS-* folders) and commit, then agent prompt sys-create.md to synthesize Purpose (--execute-agent or dry-run).",
       "kind": "git-mutate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
-      "promptFile": "prompts/commands/sys-start.md",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
+      "promptFile": "prompts/commands/sys-create.md",
       "positionals": [
         {
           "name": "description",
@@ -521,21 +927,53 @@
           "description": "Subsystem title / slug source. Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
-      "cliForm": "sys start <description>"
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "sys create <description>"
     },
     {
-      "id": "bug.start",
+      "id": "sys.link",
       "argvPrefix": [
-        "bug",
-        "start"
+        "sys",
+        "link"
       ],
-      "usage": "bug start SYS-NNN <hint>",
-      "example": "waterfall bug start SYS-001 \"Cart total rounds incorrectly\"",
-      "summary": "On a CR branch: scaffold BUG-NNN.md under the matching SYS folder (next BUG id from existing BUG-* folders in the tree) and commit, then agent prompt bug-start.md to synthesize Summary (--execute-agent or dry-run).",
+      "usage": "sys link SYS-NNN <git-url|project-name>",
+      "example": "waterfall sys link SYS-001 https://github.com/org/app.git",
+      "summary": "On a CR branch: clone git URL under projects_dir (or use a named folder; updates sysLinks in pom.json and commit). Default projects root is <specRoot>/projects; override with projects_dir in .waterfall.",
       "kind": "git-mutate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
-      "promptFile": "prompts/commands/bug-start.md",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
+      "positionals": [
+        {
+          "name": "SYS-NNN",
+          "required": true,
+          "description": "Subsystem id; technical/SYS-NNN-* must exist."
+        },
+        {
+          "name": "git-url|project-name",
+          "required": true,
+          "description": "Remote git URL (cloned next to basename) or a single-segment folder name under projects_dir (created if missing; need not be a git repo)."
+        }
+      ],
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.5",
+      "lastChangedVersion": "0.1.5",
+      "cliForm": "sys link SYS-NNN <git-url|project-name>"
+    },
+    {
+      "id": "bug.create",
+      "argvPrefix": [
+        "bug",
+        "create"
+      ],
+      "usage": "bug create SYS-NNN <hint>",
+      "example": "waterfall bug create SYS-001 \"Cart total rounds incorrectly\"",
+      "summary": "On develop: scaffold BUG-NNN.md under the matching SYS folder (next BUG id from existing BUG-* folders in the tree) and commit, then agent prompt bug-create.md to synthesize Summary (--execute-agent or dry-run).",
+      "kind": "git-mutate",
+      "requiresSpecRoot": true,
+      "branchRequirement": "Spec repo: current git branch must be \"develop\".",
+      "promptFile": "prompts/commands/bug-create.md",
       "positionals": [
         {
           "name": "sysId",
@@ -548,7 +986,10 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
-      "cliForm": "bug start SYS-NNN <hint>"
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "bug create SYS-NNN <hint>"
     },
     {
       "id": "horizontal.create",
@@ -561,7 +1002,7 @@
       "summary": "On a CR branch: scaffold HOR-NNN.md + bump next.HOR (commit), then agent prompt horizontal-create.md to synthesize Purpose (--execute-agent or dry-run).",
       "kind": "git-mutate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/horizontal-create.md",
       "positionals": [
         {
@@ -580,6 +1021,9 @@
           "description": "Purpose text. Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "horizontal create story <name-slug> <purpose>"
     },
     {
@@ -593,7 +1037,7 @@
       "summary": "On a CR branch: run git diff develop...HEAD for scope; agent prompt horizontal-update (does not edit HOR file mechanically).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/horizontal-update.md",
       "positionals": [
         {
@@ -607,6 +1051,9 @@
           "description": "Optional operator hint. Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "horizontal update HOR-NNN [<hint>]"
     },
     {
@@ -620,8 +1067,11 @@
       "summary": "On CR branch: validate diff vs develop, merge into develop, checkout develop.",
       "kind": "git-mutate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/cr-finish.md",
+      "group": "items-and-cr",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "cr finish"
     },
     {
@@ -636,7 +1086,7 @@
       "summary": "Agent: CR → RQ triage (cr-to-rq).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/cr-to-rq.md",
       "positionals": [
         {
@@ -645,6 +1095,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "cr to rq <hint>"
     },
     {
@@ -659,7 +1112,7 @@
       "summary": "Agent: RQ → UC (rq-to-uc).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/rq-to-uc.md",
       "positionals": [
         {
@@ -668,6 +1121,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "rq to uc <hint>"
     },
     {
@@ -682,7 +1138,7 @@
       "summary": "Agent: UC → story (uc-to-story).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/uc-to-story.md",
       "positionals": [
         {
@@ -691,6 +1147,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "uc to story <hint>"
     },
     {
@@ -705,7 +1164,7 @@
       "summary": "Agent: UC → test (uc-to-test).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/uc-to-test.md",
       "positionals": [
         {
@@ -714,6 +1173,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "uc to test <hint>"
     },
     {
@@ -728,7 +1190,7 @@
       "summary": "Agent: test → story (test-to-story).",
       "kind": "agent-prompt",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "promptFile": "prompts/commands/test-to-story.md",
       "positionals": [
         {
@@ -737,6 +1199,9 @@
           "description": "Inline argv tokens (joined with spaces), a single - (read stdin UTF-8), or a single @PATH (read file UTF-8; PATH relative to cwd unless absolute)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "test to story <hint>"
     },
     {
@@ -750,7 +1215,7 @@
       "summary": "Orchestrate cr → rq → rq→uc → uc→story → uc→test → test→story.",
       "kind": "orchestrate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "positionals": [
         {
           "name": "hint",
@@ -765,6 +1230,9 @@
         "uc-to-test",
         "test-to-story"
       ],
+      "group": "lifecycle-batch",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "cr all [<hint>]"
     },
     {
@@ -778,7 +1246,7 @@
       "summary": "Orchestrate rq→uc → uc→story → uc→test → test→story.",
       "kind": "orchestrate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "positionals": [
         {
           "name": "hint",
@@ -792,6 +1260,9 @@
         "uc-to-test",
         "test-to-story"
       ],
+      "group": "lifecycle-batch",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "rq all [<hint>]"
     },
     {
@@ -805,7 +1276,7 @@
       "summary": "Orchestrate uc→story → uc→test → test→story.",
       "kind": "orchestrate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "positionals": [
         {
           "name": "hint",
@@ -818,6 +1289,9 @@
         "uc-to-test",
         "test-to-story"
       ],
+      "group": "lifecycle-batch",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "uc all [<hint>]"
     },
     {
@@ -831,7 +1305,7 @@
       "summary": "Orchestrate test→story only.",
       "kind": "orchestrate",
       "requiresSpecRoot": true,
-      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr start from develop).",
+      "branchRequirement": "Spec repo: current git branch must match feature/CR-<digits>-… (change-request branch; use waterfall cr create from develop).",
       "positionals": [
         {
           "name": "hint",
@@ -842,6 +1316,9 @@
       "orchestrationSteps": [
         "test-to-story"
       ],
+      "group": "lifecycle-batch",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "test all [<hint>]"
     },
     {
@@ -878,6 +1355,9 @@
           "description": "Remark text (remaining argv joined with spaces)."
         }
       ],
+      "group": "lifecycle-edge",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
       "cliForm": "comment add <ITEM-ID> <email> <display-name> <hint…>"
     },
     {
@@ -886,20 +1366,49 @@
         "story",
         "close"
       ],
-      "usage": "story close STORY-NNN | story close all",
+      "usage": "story close STORY-NNN [STORY-NNN …] | story close all STORY-NNN [STORY-NNN …]",
       "example": "waterfall story close STORY-001",
-      "summary": "On develop: close one story folder (rename with _) or note for close all.",
+      "summary": "On develop: close one or more story folders by explicit id (rename with _), one commit per story; close all requires listed ids.",
       "kind": "git-mutate",
       "requiresSpecRoot": true,
       "branchRequirement": "Spec repo: current git branch must be \"develop\".",
+      "promptFile": "prompts/commands/story-close.md",
       "positionals": [
         {
-          "name": "STORY-NNN|all",
+          "name": "STORY-NNN…|all STORY-NNN…",
           "required": true,
-          "description": "Story id or all (all may be restricted in implementation)."
+          "description": "One or more story ids (STORY-001 or 001), or `all` followed by at least one id for an explicit batch."
         }
       ],
-      "cliForm": "story close STORY-NNN | story close all"
+      "group": "close-items",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "story close STORY-NNN [STORY-NNN …] | story close all STORY-NNN [STORY-NNN …]"
+    },
+    {
+      "id": "bug.close",
+      "argvPrefix": [
+        "bug",
+        "close"
+      ],
+      "usage": "bug close BUG-NNN",
+      "example": "waterfall bug close BUG-001",
+      "summary": "On develop: close one bug folder under technical/SYS-…/ (rename with _), set Status closed in BUG-NNN.md, commit.",
+      "kind": "git-mutate",
+      "requiresSpecRoot": true,
+      "branchRequirement": "Spec repo: current git branch must be \"develop\".",
+      "promptFile": "prompts/commands/bug-close.md",
+      "positionals": [
+        {
+          "name": "BUG-NNN",
+          "required": true,
+          "description": "Bug id (BUG-001 or 001)."
+        }
+      ],
+      "group": "close-items",
+      "sinceVersion": "0.1.4",
+      "lastChangedVersion": "0.1.4",
+      "cliForm": "bug close BUG-NNN"
     }
   ]
 }
